@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+mdm.board.iot,mdm.board.iot,model_mdm_board_iot,,1,1,1,1
+main.board.iot,main.board.iot,model_main_board_iot,,1,1,1,1
+health.promoting.hospital,health.promoting.hospital,model_health_promoting_hospital,,1,1,1,1
+line.notify,line.notify,model_line_notify,,1,1,1,1
+main.flex,main.flex,model_main_flex,,1,1,1,1

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="health_promoting_hospital_view_tree" model="ir.ui.view">
+            <field name="name">โรงพยาบาลส่งเสริมสุขภาพตําบล</field>
+            <field name="model">health.promoting.hospital</field>
+            <field name="arch" type="xml">
+                <tree string="โรงพยาบาลส่งเสริมสุขภาพตําบล">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record id="health_promoting_hospital_view_form" model="ir.ui.view">
+            <field name="name">โรงพยาบาลส่งเสริมสุขภาพตําบล</field>
+            <field name="model">health.promoting.hospital</field>
+            <field name="arch" type="xml">
+                <form string="โรงพยาบาลส่งเสริมสุขภาพตําบล">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="flex"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="health_promoting_hospital_action" model="ir.actions.act_window">
+            <field name="name">โรงพยาบาลส่งเสริมสุขภาพตําบล</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">health.promoting.hospital</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="health_promoting_hospital_menu" name="โรงพยาบาลส่งเสริมสุขภาพตําบล" parent="main_menu_iot"
+                  action="health_promoting_hospital_action" sequence="2"/>
+
+    </data>
+</odoo>

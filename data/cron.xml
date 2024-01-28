@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="line_notify" model="ir.cron">
+            <field name="name">Line Notify</field>
+            <field name="interval_number">10</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="model_line_notify"/>
+            <field name="state">code</field>
+            <field name="code">model.sent_line_notify()</field>
+        </record>
+
+    </data>
+</odoo>

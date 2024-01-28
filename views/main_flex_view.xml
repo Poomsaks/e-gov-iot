@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="main_flex_view_form" model="ir.ui.view">
+            <field name="name">Flex Line</field>
+            <field name="model">main.flex</field>
+            <field name="arch" type="xml">
+                <form string="Flex Line">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="flex"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="main_flex_view_tree" model="ir.ui.view">
+            <field name="name">Flex Line</field>
+            <field name="model">main.flex</field>
+            <field name="arch" type="xml">
+                <tree string="Flex Line">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="main_flex_action" model="ir.actions.act_window">
+            <field name="name">Flex Line</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">main.flex</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="main_flex_menu" name="Flex Line" parent="main_menu_iot"
+                  action="main_flex_action" sequence="3"/>
+
+    </data>
+</odoo>

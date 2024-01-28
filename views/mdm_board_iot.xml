@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mdm_board_iot_view_tree" model="ir.ui.view">
+            <field name="name">บอร์ด</field>
+            <field name="model">main.board.iot</field>
+            <field name="arch" type="xml">
+                <tree string="บอร์ด">
+                    <field name="name"/>
+                    <field name="position"/>
+                    <field name="time_notify"/>
+                    <field name="mac_address"/>
+                </tree>
+            </field>
+        </record>
+        <record id="mdm_board_iot_view_form" model="ir.ui.view">
+            <field name="name">บอร์ด</field>
+            <field name="model">main.board.iot</field>
+            <field name="arch" type="xml">
+                <form string="บอร์ด">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="hospital_id"/>
+                                <field name="name"/>
+                                <field name="time_notify"/>
+                                <field name="token_line_notify"/>
+                                <field name="token_line_oa"/>
+                                <field name="position"/>
+                                <field name="mac_address"/>
+                                <field name="flex_image_url"/>
+                                <field name="room_name"/>
+                            </group>
+                            <group>
+                                <field name="avg_humidity"/>
+                                <field name="avg_temperature"/>
+                            </group>
+                            <group>
+                                <field name="max_temperature"/>
+                                <field name="min_temperature"/>
+                                <field name="max_humidity"/>
+                                <field name="min_humidity"/>
+                            </group>
+<!--                            <group>-->
+<!--                                <field name="max_temperature_week"/>-->
+<!--                                <field name="min_temperature_week"/>-->
+<!--                                <field name="max_humidity_week"/>-->
+<!--                                <field name="min_humidity_week"/>-->
+<!--                            </group>-->
+<!--                            <group>-->
+<!--                                <field name="max_temperature_month"/>-->
+<!--                                <field name="min_temperature_month"/>-->
+<!--                                <field name="max_humidity_month"/>-->
+<!--                                <field name="min_humidity_month"/>-->
+<!--                            </group>-->
+<!--                            <group>-->
+<!--                                <field name="max_temperature_year"/>-->
+<!--                                <field name="min_temperature_year"/>-->
+<!--                                <field name="max_humidity_year"/>-->
+<!--                                <field name="min_humidity_year"/>-->
+<!--                            </group>-->
+
+                        </group>
+                        <group string="รายละเอียด">
+                            <group colspan="4">
+                                <field name="board_iot_ids" widget="one2many_list" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="mac_address"/>
+                                        <field name="temperature"/>
+                                        <field name="humidity"/>
+                                        <field name="light"/>
+                                        <field name="ip_connect"/>
+                                        <field name="date" widget="datetime"/>
+                                        <field name="formatted_date"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="mdm_board_iot_action" model="ir.actions.act_window">
+            <field name="name">บอร์ด</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">main.board.iot</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="mdm_board_iot_menu" name="บอร์ด" parent="main_menu_iot"
+                  action="mdm_board_iot_action"
+                  sequence="1"/>
+
+    </data>
+</odoo>
