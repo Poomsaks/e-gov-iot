@@ -11,5 +11,55 @@
             <field name="code">model.sent_line_notify()</field>
         </record>
 
+        <record id="line_notify_20_minutes" model="ir.cron">
+            <field name="name">Line Notify 20 minutes</field>
+            <field name="interval_number">20</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="model_line_notify_20min"/>
+            <field name="state">code</field>
+            <field name="code">model.sent_line_notify_20_minutes()</field>
+        </record>
+
+        <record id="line_notify_30_minutes" model="ir.cron">
+            <field name="name">Line Notify 30 minutes</field>
+            <field name="interval_number">30</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="model_line_notify_30min"/>
+            <field name="state">code</field>
+            <field name="code">model.sent_line_notify_30_minutes()</field>
+        </record>
+
+        <record id="line_notify_40_minutes" model="ir.cron">
+            <field name="name">Line Notify 40 minutes</field>
+            <field name="interval_number">40</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="model_line_notify_40min"/>
+            <field name="state">code</field>
+            <field name="code">model.sent_line_notify_40_minutes()</field>
+        </record>
+
+        <record id="line_notify_50_minutes" model="ir.cron">
+            <field name="name">Line Notify 50 minutes</field>
+            <field name="interval_number">50</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="model_line_notify_50min"/>
+            <field name="state">code</field>
+            <field name="code">model.sent_line_notify_50_minutes()</field>
+        </record>
+
+        <record id="line_notify_60_minutes" model="ir.cron">
+            <field name="name">Line Notify 60 minutes</field>
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="model_line_notify_60min"/>
+            <field name="state">code</field>
+            <field name="code">model.sent_line_notify_60_minutes()</field>
+        </record>
+
     </data>
 </odoo>

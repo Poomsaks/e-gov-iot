@@ -11,6 +11,7 @@ from pytz import timezone
 
 from odoo import http
 from odoo.http import request
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from .con_check_role import ConCheckRole
 from .config_database import ConfigDatabase
 import datetime
@@ -33,7 +34,10 @@ class ConChartData(http.Controller):
                         'id': rec.id,
                         'hospital_id': rec.hospital_id.id or "",
                         'name': rec.name or "",
+                        'image': rec.image or "",
+                        'address': rec.address or "",
                         'position': rec.position or "",
+                        'calibrate': rec.calibrate or "",
                         'mac_address': rec.mac_address or "",
                         'time_notify_select_id': rec.time_notify,
                         'time_notify': dict(rec._fields['time_notify'].selection).get(rec.time_notify),
@@ -51,41 +55,53 @@ class ConChartData(http.Controller):
     @http.route('/api/get_time_data_excel', type='json', auth='none')
     def get_time_data_excel(self, **post):
         request.session.db = ConfigDatabase.database
-        hospital_info = request.env['main.board.iot'].sudo().search([
-            ('mac_address', '=', post.get('mac_address'))])
-        if hospital_info:
-            data_info = request.env['main.board.iot'].sudo().search(
-                [('hospital_id', '=', hospital_info.hospital_id.id)])
-            if data_info:
-                data_s = []
-                for rec in data_info:
-                    vals = {
-                        'id': rec.id,
-                        'hospital_id': rec.hospital_id.id or "",
-                        'name': rec.name or "",
-                        'position': rec.position or "",
-                        'mac_address': rec.mac_address or "",
-                        'time_notify_select_id': rec.time_notify,
-                        'time_notify': dict(rec._fields['time_notify'].selection).get(rec.time_notify),
-                        'board_iot_ids': [{'id': record.id,
-                                           'mac_address': record.mac_address,
-                                           'temperature': record.temperature,
-                                           'humidity': record.humidity,
-                                           'ip_connect': record.ip_connect,
-                                           'formatted_date': record.formatted_date,
-                                           }
-                                          for record in rec.board_iot_ids],
+        start_datetime_str = post.get('start_datetime')
+        end_datetime_str = post.get('end_datetime')
+        records = request.env['mdm.board.iot'].sudo().search([
+            ('mac_address', '=', post.get('mac_address')),
+            ('date', '>=', datetime.datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')),
+            ('date', '<=', datetime.datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S'))
+        ])
+        data_all = []
+        temperature_data = []
+        humidity_data = []
+        max_humidity_data = []
+        min_humidity_data = []
+        max_temperature_data = []
+        min_temperature_data = []
+        date_data = []
 
-                    }
-                    data_s.append(vals)
-                data = {'status': 200, 'response': data_s, 'message': 'success'}
-                return data
-            else:
-                data = {'status': 500, 'response': 'ไม่พบข้อมูล', 'message': 'error'}
-                return data
-        else:
-            data = {'status': 500, 'response': 'ไม่พบข้อมูล', 'message': 'error'}
-            return data
+        for record in records:
+            data_all.append({
+                'temperature': float(record.temperature),
+                'humidity': float(record.humidity),
+                'date': record.date.strftime('%Y-%m-%d %H:%M:%S')
+            })
+            temperature_data.append(float(record.temperature))
+            humidity_data.append(float(record.humidity))
+            max_humidity_data.append(float(record.temperature))
+            min_humidity_data.append(float(record.temperature))
+            max_temperature_data.append(float(record.humidity))
+            min_temperature_data.append(float(record.humidity))
+            date_data.append(record.date.strftime('%Y-%m-%d %H:%M:%S'))
+
+        average_temperature = sum(temperature_data) / len(temperature_data) if temperature_data else 0
+        average_humidity = sum(humidity_data) / len(humidity_data) if humidity_data else 0
+
+        data = {
+            'status': 200,
+            'response': data_all,
+            'temperature': temperature_data,
+            'humidity': humidity_data,
+            'average_temperature': average_temperature,
+            'average_humidity': average_humidity,
+            'max_humidity_data': max(max_humidity_data, default=0),
+            'min_humidity_data': min(min_humidity_data, default=0),
+            'max_temperature_data': max(max_temperature_data, default=0),
+            'min_temperature_data': min(min_temperature_data, default=0),
+            'date_data': date_data,
+        }
+        return data
 
     @http.route('/api/get_time_data_by_day', type='json', auth='none')
     def get_time_data_by_day(self, **post):
@@ -160,7 +176,7 @@ class ConChartData(http.Controller):
         end_datetime = datetime.datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')
         sum_date = end_datetime - start_datetime
         records = request.env['mdm.board.iot'].sudo().search([
-            ('mac_address', '=', post.get('mac_address')),
+            ('mac_address', '=', mac_address),
             ('date', '>=', datetime.datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')),
             ('date', '<=', datetime.datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S'))
         ])
@@ -171,69 +187,16 @@ class ConChartData(http.Controller):
         elif 30 <= sum_date.days <= 365:
             return self.get_data_chart_by_year(records, start_datetime, end_datetime)
 
-    # def get_data_chart_by_day(self, data_info, mac_address, start_datetime, end_datetime):
-    #     temperature_data = []
-    #     humidity_data = []
-    #     date_data = []
-    #     max_humidity_data = []
-    #     min_humidity_data = []
-    #     max_temperature_data = []
-    #     min_temperature_data = []
-    #     if data_info:
-    #         data_s = []
-    #         for rec in data_info:
-    #             if rec.date:
-    #                 rounded_date = rec.date.replace(second=0, microsecond=0, minute=(rec.date.minute // 30) * 30)
-    #                 hour_to_append = rounded_date.strftime('%H:%M')
-    #                 if hour_to_append not in date_data:
-    #                     date_data.append(hour_to_append)
-    #                     temperature_data.append(rec.temperature or "")
-    #                     humidity_data.append(rec.humidity or "")
-    #             vals = {
-    #                 'id': rec.id,
-    #                 'mac_address': rec.mac_address or "",
-    #                 'temperature': rec.temperature or "",
-    #                 'humidity': rec.humidity or "",
-    #                 'light': rec.light or "",
-    #                 'ip_connect': rec.ip_connect or "",
-    #                 'date': rec.date or "",
-    #                 'status': rec.status or "",
-    #             }
-    #             data_s.append(vals)
-    #         hospital_info = request.env['main.board.iot'].sudo().search([
-    #             ('mac_address', '=', mac_address)], limit=1)
-    #
-    #         max_humidity_data.append(hospital_info.max_temperature)
-    #         min_humidity_data.append(hospital_info.min_temperature)
-    #
-    #         max_temperature_data.append(hospital_info.max_humidity)
-    #         min_temperature_data.append(hospital_info.min_humidity)
-    #
-    #         data = {'status': 200, 'response': data_s, 'message': 'success',
-    #                 'max_humidity_data': max_humidity_data,
-    #                 'min_humidity_data': min_humidity_data,
-    #                 'max_temperature_data': max_temperature_data,
-    #                 'min_temperature_data': min_temperature_data,
-    #                 'temperature': temperature_data,
-    #                 'humidity': humidity_data,
-    #                 'date_data': date_data,
-    #                 'start_datetime': start_datetime,
-    #                 'current_datetime': end_datetime
-    #                 }
-    #         return data
-    #     else:
-    #         data = {'status': 500, 'response': 'ไม่พบข้อมูล', 'message': 'error'}
-    #         return data
-
     def get_data_chart_by_day(self, records, start_datetime, end_datetime):
         result = {}
         interval = datetime.timedelta(minutes=30)  # Set the interval to 1 hour
 
         for record in records:
-            record_datetime = datetime.datetime.strptime(record.formatted_date, "%d/%m/%Y %H:%M:%S")
+            record_datetime = datetime.datetime.strptime(str(record.date), "%Y-%m-%d %H:%M:%S")
 
             # Round down the datetime to the nearest hour
-            rounded_datetime = record_datetime.replace(second=0, microsecond=0, minute=(record_datetime.minute // 30) * 30)
+            rounded_datetime = record_datetime.replace(second=0, microsecond=0,
+                                                       minute=(record_datetime.minute // 30) * 30)
 
             if rounded_datetime not in result:
                 result[rounded_datetime] = {
@@ -303,15 +266,15 @@ class ConChartData(http.Controller):
             'response': data_all,
             'temperature': temperature_data,
             'humidity': humidity_data,
-            'average_temperature':  sum(temperature_data) / len(temperature_data),
-            'average_humidity':  sum(humidity_data) / len(humidity_data),
+            'average_temperature': sum(temperature_data) / len(temperature_data),
+            'average_humidity': sum(humidity_data) / len(humidity_data),
             'max_humidity_data': max(max_humidity_data),
             'min_humidity_data': min(min_humidity_data),
             'max_temperature_data': max(max_temperature_data),
             'min_temperature_data': min(min_temperature_data),
             'date_data': date_data,
-            'start_datetime': start_datetime.strftime("%d/%m/%Y %H:%M:%S"),
-            'current_datetime': end_datetime.strftime("%d/%m/%Y %H:%M:%S")
+            'start_datetime': start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            'current_datetime': end_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
 
         return data
@@ -319,9 +282,9 @@ class ConChartData(http.Controller):
     def get_data_chart_by_week(self, records, start_datetime, end_datetime):
         result = {}
         for record in records:
-            day = int(record.formatted_date.split(' ')[0].split('/')[0])
-            month = int(record.formatted_date.split(' ')[0].split('/')[1])
-            year = int(record.formatted_date.split(' ')[0].split('/')[2])
+            day = record.date.day
+            month = record.date.month
+            year = record.date.year
 
             if (day, month, year) not in result:
                 result[(day, month, year)] = {
@@ -379,7 +342,7 @@ class ConChartData(http.Controller):
             'status': 200,
             'response': data_all,
             'temperature': temperature_data,
-            'humidity_data': humidity_data,
+            'humidity': humidity_data,
             'average_temperature': sum(temperature_data) / len(temperature_data),
             'average_humidity': sum(humidity_data) / len(humidity_data),
             'max_humidity_data': max(max_humidity_data),
@@ -395,9 +358,9 @@ class ConChartData(http.Controller):
     def get_data_chart_by_year(self, records, start_datetime, end_datetime):
         result = {}
         for record in records:
-            day = int(record.formatted_date.split(' ')[0].split('/')[0])
-            month = int(record.formatted_date.split(' ')[0].split('/')[1])
-            year = int(record.formatted_date.split(' ')[0].split('/')[2])
+            day = record.date.day
+            month = record.date.month
+            year = record.date.year
 
             if (month, year) not in result:
                 result[(month, year)] = {
@@ -455,7 +418,7 @@ class ConChartData(http.Controller):
             'status': 200,
             'response': averages,
             'temperature': temperature_data,
-            'humidity_data': humidity_data,
+            'humidity': humidity_data,
             'average_temperature': sum(temperature_data) / len(temperature_data),
             'average_humidity': sum(humidity_data) / len(humidity_data),
             'max_humidity_data': max(max_humidity_data),
@@ -467,6 +430,82 @@ class ConChartData(http.Controller):
             'current_datetime': end_datetime
         }
         return data
+
+    @http.route('/api/get_data_print_day', type='json', auth='none')
+    def get_data_print_day(self, **post):
+        request.session.db = ConfigDatabase.database
+        query = """
+            WITH filtered_data AS (
+                SELECT *,
+                       ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC('day', date), EXTRACT(HOUR FROM date) ORDER BY date) AS row_num
+                FROM public.mdm_board_iot 
+                WHERE date BETWEEN %s AND %s AND mac_address = %s
+                AND (EXTRACT(HOUR FROM date) = 9 OR EXTRACT(HOUR FROM date) = 15)
+            )
+            SELECT *
+            FROM filtered_data
+            WHERE row_num = 1;
+        """
+        start_date = post.get('start_datetime')
+        end_date = post.get('end_datetime')
+        mac_address = post.get('mac_address')
+        request.env.cr.execute(query, (start_date, end_date, mac_address))
+        return request.env.cr.dictfetchall()
+
+    @http.route('/api/get_data_print_day_v2', type='json', auth='none')
+    def get_data_print_day_v2(self, **post):
+        request.session.db = ConfigDatabase.database
+        query = """
+                    SELECT date, temperature, humidity
+FROM (
+    SELECT date, temperature, humidity,
+           ROW_NUMBER() OVER (PARTITION BY date::date, EXTRACT(HOUR FROM date) ORDER BY date) AS rn
+    FROM mdm_board_iot 
+    WHERE (EXTRACT(HOUR FROM date) = 9 OR EXTRACT(HOUR FROM date) = 15)
+    AND date BETWEEN '2024-02-01' AND '2024-02-10'
+) AS sub
+WHERE rn = 1;
+
+                """
+        start_date = post.get('start_datetime')
+        end_date = post.get('end_datetime')
+        mac_address = post.get('mac_address')
+        request.env.cr.execute(query, (start_date, end_date, mac_address))
+        return request.env.cr.dictfetchall()
+
+    # @http.route('/api/get_data_print_day', type='json', auth='none')
+    # def get_data_print_day(self, **post):
+    #     request.session.db = ConfigDatabase.database
+    #     start_datetime_str = post.get('start_datetime')
+    #     end_datetime_str = post.get('end_datetime')
+    #     records = request.env['mdm.board.iot'].search([
+    #         ('mac_address', '=', post.get('mac_address')),
+    #         ('date', '>=', datetime.datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M:%S')),
+    #         ('date', '<=', datetime.datetime.strptime(end_datetime_str, '%Y-%m-%d %H:%M:%S')),
+    #         '|', ('date', 'like', '% 09:%'), ('date', 'like', '% 15:%')
+    #     ])
+    #     data_all = []
+    #     temperature_data = []
+    #     humidity_data = []
+    #     date_data = []
+    #
+    #     for record in records:
+    #         data_all.append({
+    #             'temperature': float(record.temperature),
+    #             'humidity': float(record.humidity),
+    #             'date': record.date.strftime('%Y-%m-%d %H:%M:%S')
+    #         })
+    #         temperature_data.append(float(record.temperature))
+    #         humidity_data.append(float(record.humidity))
+    #         date_data.append(record.date.strftime('%Y-%m-%d %H:%M:%S'))
+    #     data = {
+    #         'status': 200,
+    #         'response': data_all,
+    #         'temperature': temperature_data,
+    #         'humidity': humidity_data,
+    #         'date_data': date_data,
+    #     }
+    #     return data
 
     @http.route('/api/get_time_data_by_week', type='json', auth='none')
     def get_time_data_by_week(self, **post):
@@ -481,9 +520,9 @@ class ConChartData(http.Controller):
         ])
         result = {}
         for record in records:
-            day = int(record.formatted_date.split(' ')[0].split('/')[0])
-            month = int(record.formatted_date.split(' ')[0].split('/')[1])
-            year = int(record.formatted_date.split(' ')[0].split('/')[2])
+            day = int(record.date.split(' ')[0].split('/')[0])
+            month = int(record.date.split(' ')[0].split('/')[1])
+            year = int(record.date.split(' ')[0].split('/')[2])
 
             if (day, month, year) not in result:
                 result[(day, month, year)] = {
@@ -566,9 +605,9 @@ class ConChartData(http.Controller):
         ])
         result = {}
         for record in records:
-            day = int(record.formatted_date.split(' ')[0].split('/')[0])
-            month = int(record.formatted_date.split(' ')[0].split('/')[1])
-            year = int(record.formatted_date.split(' ')[0].split('/')[2])
+            day = int(record.date.split(' ')[0].split('/')[0])
+            month = int(record.date.split(' ')[0].split('/')[1])
+            year = int(record.date.split(' ')[0].split('/')[2])
 
             if (day, month, year) not in result:
                 result[(day, month, year)] = {
@@ -651,9 +690,9 @@ class ConChartData(http.Controller):
         ])
         result = {}
         for record in records:
-            day = int(record.formatted_date.split(' ')[0].split('/')[0])
-            month = int(record.formatted_date.split(' ')[0].split('/')[1])
-            year = int(record.formatted_date.split(' ')[0].split('/')[2])
+            day = int(record.date.split(' ')[0].split('/')[0])
+            month = int(record.date.split(' ')[0].split('/')[1])
+            year = int(record.date.split(' ')[0].split('/')[2])
 
             if (day, month, year) not in result:
                 result[(day, month, year)] = {

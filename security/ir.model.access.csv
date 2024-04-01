@@ -4,3 +4,9 @@ main.board.iot,main.board.iot,model_main_board_iot,,1,1,1,1
 health.promoting.hospital,health.promoting.hospital,model_health_promoting_hospital,,1,1,1,1
 line.notify,line.notify,model_line_notify,,1,1,1,1
 main.flex,main.flex,model_main_flex,,1,1,1,1
+line.notify.20min,line.notify.20min,model_line_notify_20min,,1,1,1,1
+line.notify.30min,line.notify.30min,model_line_notify_30min,,1,1,1,1
+line.notify.40min,line.notify.40min,model_line_notify_40min,,1,1,1,1
+line.notify.50min,line.notify.50min,model_line_notify_50min,,1,1,1,1
+line.notify.60min,line.notify.60min,model_line_notify_60min,,1,1,1,1
+send.line.notify.new,send.line.notify.new,model_send_line_notify_new,,1,1,1,1

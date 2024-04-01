@@ -3,22 +3,20 @@ import time
 import requests
 from pytz import timezone
 
-from odoo import models, fields, api
-from odoo.http import request
+from odoo import models, api, fields
 from datetime import datetime, timedelta
 
 
-class LineNotify(models.Model):
-    _name = 'line.notify'
+class LineNotify40Min(models.Model):
+    _name = 'line.notify.40min'
 
     @api.model
-    def sent_line_notify(self):
+    def sent_line_notify_40_minutes(self):
         login_check = self.env['main.board.iot'].sudo().search(
-            [('time_notify', '=', '1'), ('notify_active', '=', True)])
+            [('time_notify', '=', '4'), ('notify_active', '=', True)])
         date_time_database = ""
         humidity = ""
         temperature = ""
-
         if login_check:
             for record in login_check:
                 sorted_board_iot_ids = sorted(record.board_iot_ids, key=lambda x: x.date, reverse=True)[:50]
@@ -71,42 +69,3 @@ class LineNotify(models.Model):
         response = requests.post(url, headers=headers, data=payload)
         data = {'status': 200, 'response': response, 'message': 'success'}
         return data
-
-    # temperature = ""
-    # humidity = ""
-    # formatted_time = ""
-    # for board_iot_id in record.board_iot_ids:
-    #     temperature = board_iot_id.temperature
-    #     humidity = board_iot_id.humidity
-    #     date_time_now = board_iot_id.date
-    #     formatted_time = date_time_now.strftime('%Y-%m-%d %H:%M:%S')
-    #
-    # token_line_notify = record.token_line_notify
-    # message = f'\nอุณหภูมิ : {temperature} °C\nความชื้น : {humidity} %\nวันที่ : {formatted_time} \nตำแหน่งที่ตั้ง : {record.position or ""}'
-    # url = 'https://notify-api.line.me/api/notify'
-    # headers = {
-    #     'Authorization': f'Bearer {token_line_notify}'
-    # }
-    # payload = {
-    #     'message': message
-    # }
-    # response = requests.post(url, headers=headers, data=payload)
-    # data = {'status': 200, 'response': response, 'message': 'success'}
-    # return data
-
-# ตั้งค่าการระบบ Cron Job
-# ในไฟล์ manifest (ไฟล์ __manifest__.py) ของโมดูล
-# 'data': [
-#     'data/cron.xml',
-# ],
-
-# สร้างไฟล์ cron.xml ในโฟลเดอร์ data ของโมดูล
-# <record id="ir_cron_my_background_job" model="ir.cron">
-#     <field name="name">My Background Job</field>
-#     <field name="interval_number">1</field>
-#     <field name="interval_type">days</field>
-#     <field name="numbercall">-1</field>
-#     <field name="model_id" ref="model_my_model"/>
-#     <field name="state">code</field>
-#     <field name="code">model.my_background_job()</field>
-# </record>

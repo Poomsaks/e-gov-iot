@@ -15,11 +15,13 @@ class MdmMainBoardIot(models.Model):
     hospital_id = fields.Many2one(comodel_name='health.promoting.hospital', string='ชื่อ รพสต.',
                                   required=False)
     name = fields.Char(string='ชื่อ รพสต.', related='hospital_id.name')
+    image = fields.Char(string='โลโก้', related='hospital_id.image')
+    address = fields.Text(string='ที่อยู่', related='hospital_id.flex')
     position = fields.Char(string='ตำแหน่งที่ตั้ง บอร์ด', required=False)
     mac_address = fields.Char(string='Mac Address', required=False)
     token_line_notify = fields.Char(string='Token Line Notify', required=False)
     token_line_oa = fields.Char(string="Token Line OA", required=False, )
-    time_count = fields.Integer(string='นับเวลา', requests=False, defaul=1)
+    time_count = fields.Integer(string='นับเวลา', requests=False, default=1)
     time_notify = fields.Selection(string="เวลาแจ้งเตือน",
                                    selection=[('1', '10 นาที'),
                                               ('2', '20 นาที'),
@@ -33,6 +35,14 @@ class MdmMainBoardIot(models.Model):
                                     string='รายละเอียด', required=False)
     flex_image_url = fields.Char(string="url รูปภาพ", required=False, )
     room_name = fields.Char(string="ห้องที่ติดตั้ง", required=False, )
+
+    calibrate = fields.Char(string="Calibrate", required=False, default='0')
+    notify_active = fields.Boolean(string="สถานะ", default=True)
+
+    @api.multi
+    def action_active(self):
+        for record in self:
+            record.notify_active = not record.notify_active
 
     @api.depends('board_iot_ids')
     def _compute_max_value(self):
@@ -212,15 +222,15 @@ class MDMBoardIOT(models.Model):
     date = fields.Datetime(string="วันที่", required=False)
     status = fields.Boolean(string='สถานะ', required=False, default=True)
 
-    @api.depends('date')
-    def _compute_formatted_date(self):
-        for record in self:
-            if record.date:
-                local_tz = pytz.timezone('Asia/Bangkok')
-                formatted_date = fields.Datetime.to_string(record.date)
-                formatted_date = fields.Datetime.from_string(formatted_date).replace(tzinfo=pytz.utc).astimezone(
-                    local_tz)
-                formatted_date = formatted_date - timedelta(hours=7)
-                record.formatted_date = formatted_date.strftime('%d/%m/%Y %H:%M:%S')
-
-    formatted_date = fields.Char(string='วันที่', compute='_compute_formatted_date', store=True)
+    # @api.depends('date')
+    # def _compute_formatted_date(self):
+    #     for record in self:
+    #         if record.date:
+    #             local_tz = pytz.timezone('Asia/Bangkok')
+    #             formatted_date = fields.Datetime.to_string(record.date)
+    #             formatted_date = fields.Datetime.from_string(formatted_date).replace(tzinfo=pytz.utc).astimezone(
+    #                 local_tz)
+    #             formatted_date = formatted_date - timedelta(hours=7)
+    #             record.formatted_date = formatted_date.strftime('%d/%m/%Y %H:%M:%S')
+    #
+    # formatted_date = fields.Char(string='วันที่', compute='_compute_formatted_date', store=True)

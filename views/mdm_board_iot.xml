@@ -19,10 +19,21 @@
             <field name="arch" type="xml">
                 <form string="บอร์ด">
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button type="object" name="action_active" string="Active/Inactive" icon="fa-check text-success"
+                                    class="oe_highlight" widget="boolean_button"
+                                    attrs="{'invisible': [('notify_active', '=', False)]}"/>
+                            <button type="object" name="action_active" string="Active/Inactive" icon="fa-times-circle text-danger"
+                                    class="oe_highlight" widget="boolean_button"
+                                    attrs="{'invisible': [('notify_active', '=', True)]}"/>
+                        </div>
                         <group>
                             <group>
+                                <field name="notify_active" invisible="1"/>
                                 <field name="hospital_id"/>
                                 <field name="name"/>
+                                <field name="image"/>
+                                <field name="address"/>
                                 <field name="time_notify"/>
                                 <field name="token_line_notify"/>
                                 <field name="token_line_oa"/>
@@ -41,24 +52,27 @@
                                 <field name="max_humidity"/>
                                 <field name="min_humidity"/>
                             </group>
-<!--                            <group>-->
-<!--                                <field name="max_temperature_week"/>-->
-<!--                                <field name="min_temperature_week"/>-->
-<!--                                <field name="max_humidity_week"/>-->
-<!--                                <field name="min_humidity_week"/>-->
-<!--                            </group>-->
-<!--                            <group>-->
-<!--                                <field name="max_temperature_month"/>-->
-<!--                                <field name="min_temperature_month"/>-->
-<!--                                <field name="max_humidity_month"/>-->
-<!--                                <field name="min_humidity_month"/>-->
-<!--                            </group>-->
-<!--                            <group>-->
-<!--                                <field name="max_temperature_year"/>-->
-<!--                                <field name="min_temperature_year"/>-->
-<!--                                <field name="max_humidity_year"/>-->
-<!--                                <field name="min_humidity_year"/>-->
-<!--                            </group>-->
+                            <group>
+                                <field name="calibrate"/>
+                            </group>
+                            <!--                            <group>-->
+                            <!--                                <field name="max_temperature_week"/>-->
+                            <!--                                <field name="min_temperature_week"/>-->
+                            <!--                                <field name="max_humidity_week"/>-->
+                            <!--                                <field name="min_humidity_week"/>-->
+                            <!--                            </group>-->
+                            <!--                            <group>-->
+                            <!--                                <field name="max_temperature_month"/>-->
+                            <!--                                <field name="min_temperature_month"/>-->
+                            <!--                                <field name="max_humidity_month"/>-->
+                            <!--                                <field name="min_humidity_month"/>-->
+                            <!--                            </group>-->
+                            <!--                            <group>-->
+                            <!--                                <field name="max_temperature_year"/>-->
+                            <!--                                <field name="min_temperature_year"/>-->
+                            <!--                                <field name="max_humidity_year"/>-->
+                            <!--                                <field name="min_humidity_year"/>-->
+                            <!--                            </group>-->
 
                         </group>
                         <group string="รายละเอียด">
@@ -71,7 +85,7 @@
                                         <field name="light"/>
                                         <field name="ip_connect"/>
                                         <field name="date" widget="datetime"/>
-                                        <field name="formatted_date"/>
+                                        <!--                                        <field name="formatted_date"/>-->
                                         <field name="status"/>
                                     </tree>
                                 </field>

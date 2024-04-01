@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
 import json
-
 import numpy as np
 import pytz
 import requests
@@ -10,7 +9,6 @@ from pytz import timezone
 
 from odoo import http, api
 from odoo.http import request
-from .con_check_role import ConCheckRole
 from .config_database import ConfigDatabase
 import datetime
 
@@ -42,7 +40,7 @@ class ConBoard(http.Controller):
         # print(response.json())
 
     def line_notify(self, temperature, humidity, token_line_notify, position, formatted_time):
-        message = f'\n ⚠️อุณหภูมิมีการเปลี่ยนแปลง⚠️\nอุณหภูมิ : {temperature} °C\nความชื้น : {humidity} %\nวันที่ : {formatted_time} \nตำแหน่งที่ตั้ง : {position or ""}'
+        message = f'\n 🔴อุณหภูมิมีการเปลี่ยนแปลง🔴\nอุณหภูมิ : {temperature} °C\nความชื้น : {humidity} %\nวันที่ : {formatted_time} \nตำแหน่งที่ตั้ง : {position or ""}'
         url = 'https://notify-api.line.me/api/notify'
         headers = {
             'Authorization': f'Bearer {token_line_notify}'
@@ -81,7 +79,7 @@ class ConBoard(http.Controller):
                 'password': "1234"
             }
             db, login, password = request.env['res.users'].sudo().signup(values, None)
-            request.env.cr.commit()  # as authenticate will use its own cursor we need to commit the current transaction
+            request.env.cr.commit()
             uid = request.session.authenticate(db_name, login, password)
             if not uid:
                 data = {'status': 400, 'message': 'เกิดข้อผิดพลาดจาก server ไม่สามารถทำรายการได้ กรุณาลองใหม่อีกครั้ง'}
@@ -147,11 +145,10 @@ class ConBoard(http.Controller):
         date_time_now = date_time_now_utc.replace(tzinfo=timezone('UTC')).astimezone(ICT)
         formatted_time = date_time_now.strftime('%Y-%m-%d %H:%M:%S')
 
-        data_model = http.request.env['main.board.iot'].sudo().search(
-            [('mac_address', '=', mac_address)], limit=1)
-
-        if data_model:
-            with api.Environment.manage():
+        with api.Environment.manage():
+            data_model = http.request.env['main.board.iot'].sudo().search(
+                [('mac_address', '=', mac_address)], limit=1)
+            if data_model:
                 data_model.write({
                     'board_iot_ids': [(0, 0, {
                         'mac_address': mac_address,
@@ -162,8 +159,7 @@ class ConBoard(http.Controller):
                         'ip_connect': ip_connect,
                     })],
                 })
-        else:
-            with api.Environment.manage():
+            else:
                 new_data_model = http.request.env['main.board.iot'].sudo().create({
                     'mac_address': mac_address,
                     'board_iot_ids': [(0, 0, {
@@ -176,7 +172,8 @@ class ConBoard(http.Controller):
                     })],
                 })
                 data_model = new_data_model
-        self.line_notify(temperature, humidity, data_model.token_line_notify, data_model.position, formatted_time)
+        # self.line_notify(temperature, humidity, data_model.token_line_notify, data_model.position, formatted_time)
+        request.env['send.line.notify.new'].sent_line_notify_new(temperature, humidity, data_model.token_line_notify, data_model.position, formatted_time)
         data = {'status': 200, 'response': data_model.id, 'message': 'success'}
         return json.dumps(data)
 
@@ -391,6 +388,7 @@ class ConBoard(http.Controller):
         if data_model:
             with api.Environment.manage():
                 data_model.write({
+                    'calibrate': post.get('calibrate') or data_model.calibrate,
                     'time_notify': post.get('time_notify') or data_model.time_notify,
                     'position': post.get('position') or data_model.position,
                 })

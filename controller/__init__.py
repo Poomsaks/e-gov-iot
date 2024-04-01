@@ -3,3 +3,5 @@ from . import config_database
 from . import con_board
 from . import con_line_oa
 from . import con_chart_data
+from . import con_calibrate
+from . import con_register

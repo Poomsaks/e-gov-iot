@@ -19,6 +19,7 @@
                         <group>
                             <field name="name"/>
                             <field name="flex"/>
+                            <field name="image"/>
                         </group>
                     </sheet>
                 </form>
